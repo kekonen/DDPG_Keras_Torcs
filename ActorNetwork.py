@@ -1,10 +1,10 @@
 import numpy as np
 import math
-from keras.initializations import normal, identity
+from keras.initializers import normal, identity
 from keras.models import model_from_json
 from keras.models import Sequential, Model
-from keras.engine.training import collect_trainable_weights
-from keras.layers import Dense, Flatten, Input, merge, Lambda
+# from keras.engine.training import collect_trainable_weights
+from keras.layers import Dense, Flatten, Input, concatenate, Lambda
 from keras.optimizers import Adam
 import tensorflow as tf
 import keras.backend as K
@@ -48,12 +48,13 @@ class ActorNetwork(object):
         S = Input(shape=[state_size])   
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(S)
         h1 = Dense(HIDDEN2_UNITS, activation='relu')(h0)
-        Aileron = Dense(1,activation='tanh',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1)  
-        Elevator = Dense(1,activation='tanh',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1)   
-        Rudder = Dense(1,activation='tanh',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1) 
+        Aileron = Dense(1,activation='tanh',kernel_initializer='random_normal')(h1)  
+        Elevator = Dense(1,activation='tanh',kernel_initializer='random_normal')(h1)   
+        Rudder = Dense(1,activation='tanh',kernel_initializer='random_normal')(h1) 
         # Throttle = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4, name=name))(h1)   
 
-        V = merge([Aileron,Elevator,Rudder],mode='concat')          
-        model = Model(input=S,output=V)
+        V = concatenate([Aileron,Elevator,Rudder])
+
+        model = Model(inputs=S,outputs=V)
         return model, model.trainable_weights, S
 
